@@ -2,12 +2,12 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config.js";
-import { conectarBD } from "./config/db.js";
+import { ConnectDB } from "./config/db.js";
 
 // Routers
-import routerUsuarios from "./routers/usuarios.routes.js";
-import routerProductos from "./routers/productos.routes.js";
-import routerCompras from "./routers/compras.routes.js";
+import routerUsuarios from "./routes/usuario.router.js";
+import routerProductos from "./routes/producto.router.js";
+import routerCompras from "./routes/compra.router.js";
 
 // Inicialización
 const app = express();
@@ -37,7 +37,7 @@ app.get("/health", (req, res) => {
 });
 
 // 🔌 Conexión y arranque
-conectarBD().then(() => {
+ConnectDB().then(() => {
   app.listen(process.env.PORT, () => {
     console.log(
       `Servidor corriendo en 👉 http://${process.env.HOST_NAME}:${process.env.PORT}`

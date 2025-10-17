@@ -4,7 +4,7 @@ import {
   crearProducto,
   modificarProducto,
   eliminarProducto
-} from "../services/productos.services.js";
+} from "../services/productos.service.js";
 
 // 📦 Listar todos los productos
 export async function obtenerTodosLosProductos(req, res) {

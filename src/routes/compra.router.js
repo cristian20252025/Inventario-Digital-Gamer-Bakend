@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { agregarProductoCarrito, eliminarCarrito, obtenerHistorial, confirmarCompra } from "../controllers/compras.controller.js";
-import { agregarAlCarritoDTO } from "../dtos/compras.dto.js";
+import { agregarProductoCarrito, eliminarCarrito, obtenerHistorial, confirmarCompra } from "../controllers/compra.controllers.js";
+import { agregarAlCarritoDTO } from "../dto/compra.dto.js";
 import { validationDTO } from "../middlewares/validationDto.js";
 import { verificarSesion } from "../middlewares/verificarSecion.js";
 

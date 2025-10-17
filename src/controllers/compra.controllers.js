@@ -3,7 +3,7 @@ agregarAlCarrito,
 borrarCarrito,
 verHistorial,
 realizarCompra
-} from "../services/compras.services.js";
+} from "../services/compra.services.js";
 
 // 🛒 Agregar producto al carrito
 export async function agregarProductoCarrito(req, res) {
