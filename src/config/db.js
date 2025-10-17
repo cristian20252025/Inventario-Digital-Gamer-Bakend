@@ -1,15 +1,23 @@
 import { MongoClient } from "mongodb";
-import dotenv from "dotenv";
-dotenv.config();
+import 'dotenv/config'
 
-const client = new MongoClient(process.env.MONGO_URI);
-export const connectDB = async () => {
-  try {
-    await client.connect();
-    console.log("✅ MongoDB conectado");
-    return client.db(process.env.DB_NAME || "videojuegosDB");
-  } catch (err) {
-    console.error("❌ Error de conexión:", err);
-    process.exit(1);
-  }
-};
+const uri = process.env.MONGO_URI;
+const db_name = process.env.DB_NAME;
+
+const cliente = new MongoClient(uri);
+let db;
+
+export async function ConnectDB(){
+    try {
+        await cliente.connect();
+        console.log("DB conectada!!!");
+        db = cliente.db(db_name);
+    } catch (error) {
+        console.error("Error al conectar la BD:", error)
+    }
+}
+
+export function GetDB(){
+    if(!db) throw new Error("No se ha conectado la BD!!");
+    return db;
+}
