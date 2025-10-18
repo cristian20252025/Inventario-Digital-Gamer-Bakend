@@ -3,7 +3,8 @@ import {
   registrarUnUsuario,
   iniciarSesion,
   cerrarSesion,
-  actualizarContraseña
+  actualizarContraseña,
+  verificarSesionActual
 } from "../controllers/usuario.controllers.js";
 import {
   registrarUsuarioDTO,
@@ -13,6 +14,8 @@ import {
 import { validationDTO } from "../middlewares/validationDto.js";
 
 const router = Router();
+
+router.get("/verificar-sesion", verificarSesionActual);
 
 // 🧍 Registrar usuario o empleado
 router.post("/registrar", registrarUsuarioDTO, validationDTO, registrarUnUsuario);

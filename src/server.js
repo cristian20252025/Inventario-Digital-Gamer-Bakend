@@ -1,6 +1,10 @@
+// ===================================
+// SERVER.JS - Backend con sesiones corregidas
+// ===================================
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import session from "express-session";
 import "dotenv/config.js";
 import { ConnectDB } from "./config/db.js";
 
@@ -9,38 +13,83 @@ import routerUsuarios from "./routes/usuario.router.js";
 import routerProductos from "./routes/producto.router.js";
 import routerCompras from "./routes/compra.router.js";
 
-// Inicialización
 const app = express();
 
-// Middlewares globales
-app.use(express.json());
+// ✅ ORDEN IMPORTANTE: cookieParser ANTES de express-session
 app.use(cookieParser());
+app.use(express.json());
 
-// ⚙️ Configuración segura de CORS
+// ✅ CORS - Configuración correcta para sesiones
 app.use(
   cors({
-    origin: "http://localhost:5173", // tu frontend local
-    credentials: true, // permite enviar cookies
-    methods: ["GET", "POST", "PATCH", "DELETE"],
+    origin: "http://localhost:5500", // Tu Live Server
+    credentials: true, // ✅ CRÍTICO para cookies
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// Rutas
+// ✅ Sesiones con configuración CORREGIDA
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "supersecreto123456",
+    name: "sessionId", // Nombre de la cookie
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true, // ✅ Cambiado a true para seguridad
+      secure: false, // false porque usamos HTTP (no HTTPS)
+      sameSite: "lax", // ✅ Importante para CORS
+      maxAge: 1000 * 60 * 60 * 24, // 24 horas
+      path: "/",
+    },
+  })
+);
+
+// ✅ Debug middleware MEJORADO
+app.use((req, res, next) => {
+  console.log("\n" + "=".repeat(50));
+  console.log("📍", req.method, req.path);
+  console.log("🍪 Cookies recibidas:", req.cookies);
+  console.log("🆔 SessionID:", req.sessionID);
+  console.log("👤 Usuario en sesión:", req.session?.usuario || "ninguno");
+  console.log("🌐 Origin:", req.headers.origin);
+  console.log("=".repeat(50) + "\n");
+  next();
+});
+
+// ✅ Rutas
 app.use("/usuarios", routerUsuarios);
 app.use("/productos", routerProductos);
 app.use("/compras", routerCompras);
 
-// Endpoint de verificación
+// Health check
 app.get("/health", (req, res) => {
-  res.status(200).json({ message: "✅ Backend activo y saludable!" });
+  res.status(200).json({ 
+    message: "✅ Backend OK",
+    session: !!req.session,
+    sessionID: req.sessionID
+  });
 });
 
-// 🔌 Conexión y arranque
-ConnectDB().then(() => {
-  app.listen(process.env.PORT, () => {
-    console.log(
-      `Servidor corriendo en 👉 http://${process.env.HOST_NAME}:${process.env.PORT}`
-    );
+// ✅ Manejador de errores
+app.use((err, req, res, next) => {
+  console.error("❌ Error en el servidor:", err);
+  res.status(500).json({ 
+    error: "Error interno del servidor",
+    message: err.message 
   });
+});
+
+// ✅ Iniciar servidor
+ConnectDB().then(() => {
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, "localhost", () => {
+    console.log("\n" + "🚀".repeat(25));
+    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    console.log("🚀".repeat(25) + "\n");
+  });
+}).catch(err => {
+  console.error("❌ Error al conectar a la base de datos:", err);
+  process.exit(1);
 });

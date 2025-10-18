@@ -1,79 +1,124 @@
 import {
-agregarAlCarrito,
-borrarCarrito,
-verHistorial,
-realizarCompra
+  agregarAlCarrito,
+  borrarCarrito,
+  verHistorial,
+  realizarCompra
 } from "../services/compra.services.js";
 
 // 🛒 Agregar producto al carrito
 export async function agregarProductoCarrito(req, res) {
-try {
-const emailUsuario = req.cookies.usuario?.email; // ✅ Tomar email desde cookie
-const { idProducto, cantidad } = req.body;
+  try {
+    console.log('\n🛒 ===== AGREGAR AL CARRITO =====');
+    console.log('📦 Session completa:', req.session);
+    console.log('👤 Usuario en sesión:', req.session?.usuario);
+    console.log('🆔 Session ID:', req.sessionID);
+    console.log('🍪 Cookies:', req.cookies);
+    
+    // ✅ Tomar email desde la sesión (ya verificada por middleware)
+    const emailUsuario = req.session?.usuario?.email;
+    const { idProducto, cantidad } = req.body;
 
-if (!emailUsuario) {
-  return res.status(401).json({ error: "Debe iniciar sesión para agregar productos al carrito." });
-}
+    console.log('📦 Datos recibidos:', { emailUsuario, idProducto, cantidad });
 
-const resultado = await agregarAlCarrito(emailUsuario, idProducto, cantidad);
-res.status(200).json(resultado);
+    if (!emailUsuario) {
+      console.error('❌ No hay email en sesión');
+      console.error('❌ Session completa:', JSON.stringify(req.session, null, 2));
+      return res.status(401).json({ 
+        error: "Debe iniciar sesión para agregar productos al carrito." 
+      });
+    }
 
-} catch (error) {
-console.error("Error al agregar al carrito:", error);
-res.status(500).json({ error: "Error del servidor al agregar al carrito." });
-}
+    const resultado = await agregarAlCarrito(emailUsuario, idProducto, cantidad);
+    console.log('✅ Producto agregado al carrito');
+    
+    res.status(200).json(resultado);
+
+  } catch (error) {
+    console.error("❌ Error al agregar al carrito:", error);
+    res.status(500).json({ 
+      error: error.message || "Error del servidor al agregar al carrito." 
+    });
+  }
 }
 
 // 🧹 Borrar carrito
 export async function eliminarCarrito(req, res) {
-try {
-const emailUsuario = req.cookies.usuario?.email; // ✅ Desde cookie
+  try {
+    console.log('🧹 Eliminando carrito...');
+    
+    const emailUsuario = req.session.usuario?.email;
 
-if (!emailUsuario) {
-  return res.status(401).json({ error: "Debe iniciar sesión para eliminar el carrito." });
-}
+    if (!emailUsuario) {
+      console.error('❌ No hay email en sesión');
+      return res.status(401).json({ 
+        error: "Debe iniciar sesión para eliminar el carrito." 
+      });
+    }
 
-const resultado = await borrarCarrito(emailUsuario);
-res.status(200).json(resultado);
+    const resultado = await borrarCarrito(emailUsuario);
+    console.log('✅ Carrito eliminado');
+    
+    res.status(200).json(resultado);
 
-} catch (error) {
-console.error("Error al borrar el carrito:", error);
-res.status(500).json({ error: "Error del servidor al eliminar el carrito." });
-}
+  } catch (error) {
+    console.error("❌ Error al borrar el carrito:", error);
+    res.status(500).json({ 
+      error: error.message || "Error del servidor al eliminar el carrito." 
+    });
+  }
 }
 
 // 📜 Ver historial de compras
 export async function obtenerHistorial(req, res) {
-try {
-const emailUsuario = req.cookies.usuario?.email; // ✅ Desde cookie
+  try {
+    console.log('📜 Obteniendo historial...');
+    
+    const emailUsuario = req.session.usuario?.email;
 
-if (!emailUsuario) {
-  return res.status(401).json({ error: "Debe iniciar sesión para ver su historial de compras." });
-}
+    if (!emailUsuario) {
+      console.error('❌ No hay email en sesión');
+      return res.status(401).json({ 
+        error: "Debe iniciar sesión para ver su historial de compras." 
+      });
+    }
 
-const historial = await verHistorial(emailUsuario);
-res.status(200).json(historial);
+    const historial = await verHistorial(emailUsuario);
+    console.log(`✅ Historial obtenido: ${historial.length} compras`);
+    
+    res.status(200).json(historial);
 
-} catch (error) {
-console.error("Error al obtener el historial:", error);
-res.status(500).json({ error: "Error del servidor al obtener el historial." });
-}
+  } catch (error) {
+    console.error("❌ Error al obtener el historial:", error);
+    res.status(500).json({ 
+      error: error.message || "Error del servidor al obtener el historial." 
+    });
+  }
 }
 
 // 💳 Realizar compra
 export async function confirmarCompra(req, res) {
-try {
-const emailUsuario = req.cookies.usuario?.email; // ✅ Desde cookie
+  try {
+    console.log('💳 Confirmando compra...');
+    
+    const emailUsuario = req.session.usuario?.email;
 
-if (!emailUsuario) {
-  return res.status(401).json({ error: "Debe iniciar sesión para realizar la compra." });
-}
+    if (!emailUsuario) {
+      console.error('❌ No hay email en sesión');
+      return res.status(401).json({ 
+        error: "Debe iniciar sesión para realizar la compra." 
+      });
+    }
 
-const resultado = await realizarCompra(emailUsuario);
-res.status(200).json(resultado);
+    console.log('📦 Procesando compra para:', emailUsuario);
+    const resultado = await realizarCompra(emailUsuario);
+    console.log('✅ Compra realizada exitosamente');
+    
+    res.status(200).json(resultado);
 
-} catch (error) {
-console.error("Error al realizar la compra:", error);
-res.status(500).json({ error: "Error del servidor al procesar la compra." });
-}
+  } catch (error) {
+    console.error("❌ Error al realizar la compra:", error);
+    res.status(500).json({ 
+      error: error.message || "Error del servidor al procesar la compra." 
+    });
+  }
 }
